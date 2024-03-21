@@ -61,7 +61,7 @@ class GeneticNet:
             self.w3.reshape(-1),
             self.b3.reshape(-1)
         ], axis=0)
-        
+
     def forward(self, grid):
         x = grid.reshape(-1, 1)
         x = self.w1.T @ x + self.b1
@@ -71,15 +71,3 @@ class GeneticNet:
         x = self.w3.T @ x + self.b3
         idx = np.argmax(x)
         return (idx // self.grid_size, idx % self.grid_size)
-
-
-def main():
-    net = GeneticNet(5)
-    chromosome = np.random.normal(size=(net.chromosome_size,))
-    net.extract_from_chromosome(chromosome)
-    new_chromosome = net.get_chromosome()
-    print(np.array_equal(chromosome, new_chromosome))
-
-
-if __name__ == "__main__":
-    main()

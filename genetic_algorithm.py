@@ -103,15 +103,17 @@ def train(
     games_per_chromosome_as_tic,
     n_matings,
     mutation_prob,
-    mutation_range
+    mutation_range,
+    select_topk
 ):
     plt.figure(figsize=(15, 9))
 
     population, nets = init_population(population_size, grid_size)
 
     max_score_history = np.zeros(generations)
-    best_chromosome = np.zeros(nets[0].chromosome_size)
-    best_score = 0
+    running_record_history = np.zeros(generations)
+    best_chromosomes = np.zeros(shape=(select_topk, nets[0].chromosome_size))
+    best_scores = np.zeros(select_topk)
 
     loop = tqdm(range(generations))
     for generation in loop:
@@ -125,9 +127,17 @@ def train(
         loop.set_postfix_str("Updating...")
         best_idx = np.argmax(fitness_score)
         max_score_history[generation] = fitness_score[best_idx]
-        if fitness_score[best_idx] >= best_score:
-            best_chromosome = np.copy(population[best_idx])
-            best_score = fitness_score[best_idx]
+
+        top_ids_new = (-fitness_score).argsort()[:select_topk]
+        best_scores = np.concatenate(
+            [best_scores, fitness_score[top_ids_new]], axis=0)
+        best_chromosomes = np.concatenate(
+            [best_chromosomes, population[top_ids_new]], axis=0)
+
+        top_ids_final = (-best_scores).argsort()[:select_topk]
+        best_scores = best_scores[top_ids_final]
+        best_chromosomes = best_chromosomes[top_ids_final]
+        running_record_history[generation] = best_scores[0]
 
         if generation < generations - 1:
             loop.set_postfix_str("Mating...")
@@ -136,22 +146,10 @@ def train(
         loop.set_postfix_str("Plotting...")
         plt.clf()
         plt.plot(max_score_history[:generation+1], label="max score")
+        plt.plot(running_record_history[:generation+1], label="best score")
         plt.legend()
         plt.grid(True)
         plt.draw()
         plt.pause(0.0000001)
 
-    return best_chromosome
-
-
-if __name__ == "__main__":
-    train(
-        generations=10000,
-        population_size=70,
-        grid_size=5,
-        game_goal=4,
-        games_per_chromosome_as_tic=30,
-        n_matings=40,
-        mutation_prob=0.05,
-        mutation_range=1
-    )
+    return best_chromosomes

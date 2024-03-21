@@ -21,7 +21,7 @@ class TicTacToe:
                 next_move=flag*(-1)
             )
             return result
-        
+
         self.grid[*pos] = flag
         result = dict(
             grid=self.grid,
@@ -102,23 +102,3 @@ class TicTacToe:
         if line_sum == self.tac * self.goal:
             return self.tac
         return 0.0
-
-
-def main():
-    game = TicTacToe()
-    done = 0.0
-    flag = 1.0
-    while done == 0.0:
-        row, col = map(int, input().split())
-        state = game.make_move(flag, (row, col))
-        grid = state["grid"]
-        done = state["done"]
-        score = state["score"]
-        flag = state["next_move"]
-        print(grid)
-
-    print(score)
-
-
-if __name__ == "__main__":
-    main()
